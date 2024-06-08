@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
-const connection = require("./database");
+const connection = require("./config/database");
 const viewEngineConfig = require("./config/viewEngineConfig");
 const routerWeb = require("./routes/web");
 // config
