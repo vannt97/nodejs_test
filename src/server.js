@@ -7,7 +7,6 @@ const routerWeb = require("./routes/web");
 // config
 app.use(express.json());
 viewEngineConfig(app);
-
 // Định nghĩa một route đơn giản
 app.use("/", routerWeb);
 
