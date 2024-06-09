@@ -4,6 +4,8 @@ require("dotenv").config();
 const connection = require("./config/database");
 const viewEngineConfig = require("./config/viewEngineConfig");
 const routerWeb = require("./routes/web");
+// const path = require("path");
+// app.use('/images', express.static(path.join(__dirname, '/public/images')));
 // config
 app.use(express.json());
 viewEngineConfig(app);
