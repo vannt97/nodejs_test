@@ -12,7 +12,6 @@ const {
   MYSQL_DB: DB,
   MYSQL_DB_FILE: DB_FILE,
 } = process.env;
-console.log("process.env: ", process.env);
 let pool;
 
 async function init() {
@@ -21,6 +20,7 @@ async function init() {
   const password = PASSWORD_FILE ? fs.readFileSync(PASSWORD_FILE) : PASSWORD;
   const database = DB_FILE ? fs.readFileSync(DB_FILE) : DB;
 
+  console.log("wait Port");
   await waitPort({
     host,
     port: 3306,
@@ -39,7 +39,7 @@ async function init() {
 
   return new Promise((acc, rej) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean) DEFAULT CHARSET utf8mb4",
+      "CREATE TABLE IF NOT EXISTS images (id INT NOT NULL AUTO_INCREMENT, link MEDIUMTEXT, primary key (id)) DEFAULT CHARSET utf8mb4",
       (err) => {
         if (err) return rej(err);
 
@@ -61,7 +61,7 @@ async function teardown() {
 
 async function getItems() {
   return new Promise((acc, rej) => {
-    pool.query("SELECT * FROM todo_items", (err, rows) => {
+    pool.query("SELECT * FROM images", (err, rows) => {
       if (err) return rej(err);
       acc(
         rows.map((item) =>
@@ -73,6 +73,7 @@ async function getItems() {
     });
   });
 }
+
 
 async function getItem(id) {
   return new Promise((acc, rej) => {
@@ -124,6 +125,20 @@ async function removeItem(id) {
   });
 }
 
+async function initImages() {
+  return new Promise((acc, rej) => {
+    pool.query(
+      "CREATE TABLE IF NOT EXISTS images (id int NOT NULL AUTO_INCREMENT, link MEDIUMTEXT) DEFAULT CHARSET utf8mb4",
+      (err) => {
+        if (err) return rej(err);
+
+        console.log(`Connected to mysql db at host ${HOST}`);
+        acc();
+      }
+    );
+  });
+}
+
 module.exports = {
   init,
   teardown,
@@ -132,4 +147,5 @@ module.exports = {
   storeItem,
   updateItem,
   removeItem,
+  initImages,
 };

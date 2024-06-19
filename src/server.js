@@ -4,15 +4,36 @@ require("dotenv").config();
 const connection = require("./config/database");
 const viewEngineConfig = require("./config/viewEngineConfig");
 const routerWeb = require("./routes/web");
-// const path = require("path");
-// app.use('/images', express.static(path.join(__dirname, '/public/images')));
+
 // config
-// app.use(express.json());
-// viewEngineConfig(app);
+app.use(express.json());
+viewEngineConfig(app);
 // Định nghĩa một route đơn giản
-// app.use("/", routerWeb);
 
 // Định nghĩa một API endpoint
+
+connection
+  .init()
+  .then(() => {
+    console.log("ket noi db thanh cong");
+    app.use("/", routerWeb);
+
+    app.get("/api/images", async (req, res) => {
+      const items = await connection.getItems();
+      console.log("items: ", items);
+      res.send(items);
+    });
+
+    app.listen(8000, () => {
+      console.log(`Server đang chạy tại http://localhost:${8000}`);
+    });
+  })
+  .catch((err) => {
+    console.error("errrrr: ", err);
+    process.exit(1);
+  });
+
+// Bắt đầu server
 // app.post("/api/save", (req, res) => {
 //   const newItem = req.body;
 //   const query = "INSERT INTO images (link) VALUES (?)";
@@ -56,47 +77,3 @@ const routerWeb = require("./routes/web");
 //     res.json(json);
 //   });
 // });
-connection
-  .init()
-  .then(() => {
-    console.log("ket noi db thanh cong");
-    app.listen(process.env.PORT, () => {
-      console.log(`Server đang chạy tại http://localhost:${process.env.PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("errrrr: ", err);
-    process.exit(1);
-  });
-app.get("/api/images", async (req, res) => {
-  const items = await connection.getItems();
-  console.log("items: ", items);
-  res.send(items);
-
-  // const itemId = req.params.id;
-  // const query = "SELECT * FROM images WHERE id = ?";
-  // connection.query(query, [itemId], (err, results) => {
-  //   if (err) {
-  //     res.status(500).json({ error: err.message });
-  //     return;
-  //   }
-  //   if (results.length === 0) {
-  //     res.status(404).json({ error: "Item not found" });
-  //     return;
-  //   }
-  //   const json = {
-  //     messages: [
-  //       {
-  //         attachment: {
-  //           type: "image",
-  //           payload: {
-  //             url: results[0]?.link,
-  //           },
-  //         },
-  //       },
-  //     ],
-  //   };
-  //   res.json(json);
-  // });
-});
-// Bắt đầu server
