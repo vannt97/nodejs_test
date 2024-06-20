@@ -29,6 +29,12 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: 12345678
       MYSQL_DB: test_nodejs
+  source-fe:
+    image: nginx:stable-alpine
+    ports:
+      - 80:80
+    volumes:
+      - 
 
 volumes:
   db-test-nodejs:
