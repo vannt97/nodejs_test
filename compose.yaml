@@ -1,4 +1,17 @@
 services:
+  mysqldb:
+    image: mysql:8.0
+    volumes:
+      - db-test-nodejs:/var/lib/mysql
+    # env_file: ./.env
+    environment:
+      # - MYSQL_ROOT_PASSWORD=$DB_PASSWORD
+      # - MYSQL_DATABASE=$DB_DATABASE_NAME
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: test_nodejs
+    ports:
+      # MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
+      - "3307:3306"
   app:
     build:
       context: ./
@@ -10,21 +23,17 @@ services:
     volumes:
       - ./:/app
     environment:
-      MYSQL_HOST: $DB_HOSTNAME_DOCKER
-      MYSQL_USER: $DB_USER
-      MYSQL_PASSWORD: $DB_PASSWORD
-      MYSQL_DB: $DB_DATABASE_NAME
-
-  mysqldb:
-    image: mysql:8.0
-    env_file: ./.env
-    volumes:
-      - db-test-nodejs:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: $DB_PASSWORD
-      MYSQL_DATABASE: $DB_DATABASE_NAME
+      MYSQL_HOST: mysqldb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 12345678
+      MYSQL_DB: test_nodejs
+  source-fe:
+    image: nginx:stable-alpine
     ports:
-      - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
-
+      - 80:80
+    volumes:
+      - ./source_fe/dist:/usr/share/nginx/html
+      - ./source_fe/nginx.conf:/etc/nginx/conf.d/default.conf
+    
 volumes:
   db-test-nodejs:

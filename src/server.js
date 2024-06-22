@@ -16,16 +16,56 @@ connection
   .init()
   .then(() => {
     console.log("ket noi db thanh cong");
-    app.use("/", routerWeb);
+    // app.post("/api/save", (req, res) => {
+    //   const newItem = req.body;
+    //   const query = "INSERT INTO images (link) VALUES (?)";
+    //   connection.query(query, [newItem.link], (err, result) => {
+    //     if (err) {
+    //       res.status(500).json({ error: err.message });
+    //       return;
+    //     }
+    //     newItem.id = result.insertId;
+    //     res.json(newItem);
+    //   });
+    // });
 
+    // app.get("/api/images/:id", (req, res) => {
+    //   const itemId = req.params.id;
+    //   const query = "SELECT * FROM images WHERE id = ?";
+    //   console.log("connection: ", connection);
+    //   connection.query(query, [itemId], (err, results) => {
+    //     console.log("err: ", err);
+    //     console.log("results: ", results);
+    //     if (err) {
+    //       res.status(500).json({ error: err.message });
+    //       return;
+    //     }
+    //     if (results.length === 0) {
+    //       res.status(404).json({ error: "Item not found" });
+    //       return;
+    //     }
+    //     const json = {
+    //       messages: [
+    //         {
+    //           attachment: {
+    //             type: "image",
+    //             payload: {
+    //               url: results[0]?.link,
+    //             },
+    //           },
+    //         },
+    //       ],
+    //     };
+    //     res.json(json);
+    //   });
+    // });
     app.get("/api/images", async (req, res) => {
       const items = await connection.getItems();
       console.log("items: ", items);
       res.send(items);
     });
-
-    app.listen(8000, () => {
-      console.log(`Server đang chạy tại http://localhost:${8000}`);
+    app.listen(process.env.PORT, () => {
+      console.log(`Server đang chạy tại http://localhost:${process.env.PORT}`);
     });
   })
   .catch((err) => {
@@ -34,46 +74,3 @@ connection
   });
 
 // Bắt đầu server
-// app.post("/api/save", (req, res) => {
-//   const newItem = req.body;
-//   const query = "INSERT INTO images (link) VALUES (?)";
-//   connection.query(query, [newItem.link], (err, result) => {
-//     if (err) {
-//       res.status(500).json({ error: err.message });
-//       return;
-//     }
-//     newItem.id = result.insertId;
-//     res.json(newItem);
-//   });
-// });
-
-// app.get("/api/images/:id", (req, res) => {
-//   const itemId = req.params.id;
-//   const query = "SELECT * FROM images WHERE id = ?";
-//   console.log("connection: ", connection);
-//   connection.query(query, [itemId], (err, results) => {
-//     console.log("err: ", err);
-//     console.log("results: ", results);
-//     if (err) {
-//       res.status(500).json({ error: err.message });
-//       return;
-//     }
-//     if (results.length === 0) {
-//       res.status(404).json({ error: "Item not found" });
-//       return;
-//     }
-//     const json = {
-//       messages: [
-//         {
-//           attachment: {
-//             type: "image",
-//             payload: {
-//               url: results[0]?.link,
-//             },
-//           },
-//         },
-//       ],
-//     };
-//     res.json(json);
-//   });
-// });
