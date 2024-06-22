@@ -10,61 +10,16 @@ require("dotenv").config();
 var connection = require("./config/database");
 var viewEngineConfig = require("./config/viewEngineConfig");
 var routerWeb = require("./routes/web");
-// const path = require("path");
-// app.use('/images', express.static(path.join(__dirname, '/public/images')));
+
 // config
-// app.use(express.json());
-// viewEngineConfig(app);
+app.use(express.json());
+viewEngineConfig(app);
 // Định nghĩa một route đơn giản
-// app.use("/", routerWeb);
 
 // Định nghĩa một API endpoint
 
 connection.init().then(function () {
   console.log("ket noi db thanh cong");
-  // app.post("/api/save", (req, res) => {
-  //   const newItem = req.body;
-  //   const query = "INSERT INTO images (link) VALUES (?)";
-  //   connection.query(query, [newItem.link], (err, result) => {
-  //     if (err) {
-  //       res.status(500).json({ error: err.message });
-  //       return;
-  //     }
-  //     newItem.id = result.insertId;
-  //     res.json(newItem);
-  //   });
-  // });
-
-  // app.get("/api/images/:id", (req, res) => {
-  //   const itemId = req.params.id;
-  //   const query = "SELECT * FROM images WHERE id = ?";
-  //   console.log("connection: ", connection);
-  //   connection.query(query, [itemId], (err, results) => {
-  //     console.log("err: ", err);
-  //     console.log("results: ", results);
-  //     if (err) {
-  //       res.status(500).json({ error: err.message });
-  //       return;
-  //     }
-  //     if (results.length === 0) {
-  //       res.status(404).json({ error: "Item not found" });
-  //       return;
-  //     }
-  //     const json = {
-  //       messages: [
-  //         {
-  //           attachment: {
-  //             type: "image",
-  //             payload: {
-  //               url: results[0]?.link,
-  //             },
-  //           },
-  //         },
-  //       ],
-  //     };
-  //     res.json(json);
-  //   });
-  // });
   app.get("/api/images", /*#__PURE__*/function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
       var items;
@@ -72,12 +27,15 @@ connection.init().then(function () {
         while (1) switch (_context.prev = _context.next) {
           case 0:
             _context.next = 2;
-            return connection.getItems();
+            return connection.initImages();
           case 2:
+            _context.next = 4;
+            return connection.getItems();
+          case 4:
             items = _context.sent;
             console.log("items: ", items);
             res.send(items);
-          case 5:
+          case 7:
           case "end":
             return _context.stop();
         }
@@ -96,3 +54,47 @@ connection.init().then(function () {
 });
 
 // Bắt đầu server
+
+// app.post("/api/save", (req, res) => {
+//   const newItem = req.body;
+//   const query = "INSERT INTO images (link) VALUES (?)";
+//   connection.query(query, [newItem.link], (err, result) => {
+//     if (err) {
+//       res.status(500).json({ error: err.message });
+//       return;
+//     }
+//     newItem.id = result.insertId;
+//     res.json(newItem);
+//   });
+// });
+
+// app.get("/api/images/:id", (req, res) => {
+//   const itemId = req.params.id;
+//   const query = "SELECT * FROM images WHERE id = ?";
+//   console.log("connection: ", connection);
+//   connection.query(query, [itemId], (err, results) => {
+//     console.log("err: ", err);
+//     console.log("results: ", results);
+//     if (err) {
+//       res.status(500).json({ error: err.message });
+//       return;
+//     }
+//     if (results.length === 0) {
+//       res.status(404).json({ error: "Item not found" });
+//       return;
+//     }
+//     const json = {
+//       messages: [
+//         {
+//           attachment: {
+//             type: "image",
+//             payload: {
+//               url: results[0]?.link,
+//             },
+//           },
+//         },
+//       ],
+//     };
+//     res.json(json);
+//   });
+// });

@@ -16,7 +16,25 @@ connection
   .init()
   .then(() => {
     console.log("ket noi db thanh cong");
-    // app.post("/api/save", (req, res) => {
+    
+    app.get("/api/images", async (req, res) => {
+      await connection.initImages();
+      const items = await connection.getItems();
+      console.log("items: ", items);
+      res.send(items);
+    });
+    app.listen(process.env.PORT, () => {
+      console.log(`Server đang chạy tại http://localhost:${process.env.PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("errrrr: ", err);
+    process.exit(1);
+  });
+
+// Bắt đầu server
+
+// app.post("/api/save", (req, res) => {
     //   const newItem = req.body;
     //   const query = "INSERT INTO images (link) VALUES (?)";
     //   connection.query(query, [newItem.link], (err, result) => {
@@ -59,18 +77,3 @@ connection
     //     res.json(json);
     //   });
     // });
-    app.get("/api/images", async (req, res) => {
-      const items = await connection.getItems();
-      console.log("items: ", items);
-      res.send(items);
-    });
-    app.listen(process.env.PORT, () => {
-      console.log(`Server đang chạy tại http://localhost:${process.env.PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("errrrr: ", err);
-    process.exit(1);
-  });
-
-// Bắt đầu server

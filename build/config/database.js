@@ -17,7 +17,6 @@ var _process$env = process.env,
   PASSWORD_FILE = _process$env.MYSQL_PASSWORD_FILE,
   DB = _process$env.MYSQL_DB,
   DB_FILE = _process$env.MYSQL_DB_FILE;
-console.log("process.env: ", process.env);
 var pool;
 function init() {
   return _init.apply(this, arguments);
@@ -49,7 +48,7 @@ function _init() {
             charset: "utf8mb4"
           });
           return _context.abrupt("return", new Promise(function (acc, rej) {
-            pool.query("CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean) DEFAULT CHARSET utf8mb4", function (err) {
+            pool.query("CREATE TABLE IF NOT EXISTS images (id INT NOT NULL AUTO_INCREMENT, link MEDIUMTEXT, primary key (id)) DEFAULT CHARSET utf8mb4", function (err) {
               if (err) return rej(err);
               console.log("Connected to mysql db at host ".concat(HOST));
               acc();
@@ -202,6 +201,29 @@ function _removeItem() {
   }));
   return _removeItem.apply(this, arguments);
 }
+function initImages() {
+  return _initImages.apply(this, arguments);
+}
+function _initImages() {
+  _initImages = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+    return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+      while (1) switch (_context8.prev = _context8.next) {
+        case 0:
+          return _context8.abrupt("return", new Promise(function (acc, rej) {
+            pool.query("CREATE TABLE IF NOT EXISTS images (id int NOT NULL AUTO_INCREMENT, link MEDIUMTEXT) DEFAULT CHARSET utf8mb4", function (err) {
+              if (err) return rej(err);
+              console.log("Connected to mysql db at host ".concat(HOST));
+              acc();
+            });
+          }));
+        case 1:
+        case "end":
+          return _context8.stop();
+      }
+    }, _callee8);
+  }));
+  return _initImages.apply(this, arguments);
+}
 module.exports = {
   init: init,
   teardown: teardown,
@@ -209,5 +231,6 @@ module.exports = {
   getItem: getItem,
   storeItem: storeItem,
   updateItem: updateItem,
-  removeItem: removeItem
+  removeItem: removeItem,
+  initImages: initImages
 };
