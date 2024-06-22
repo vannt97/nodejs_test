@@ -23,7 +23,7 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-      # - /app/node_modules
+      - /app/node_modules
     environment:
       MYSQL_HOST: mysqldb
       MYSQL_USER: root
