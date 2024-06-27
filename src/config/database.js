@@ -2,6 +2,7 @@
 const waitPort = require("wait-port");
 const fs = require("fs");
 const mysql = require("mysql2");
+const request = require("request");
 const {
   MYSQL_HOST: HOST,
   MYSQL_HOST_FILE: HOST_FILE,
@@ -76,7 +77,7 @@ async function getItems() {
 
 async function getItem(id) {
   return new Promise((acc, rej) => {
-    pool.query("SELECT * FROM todo_items WHERE id=?", [id], (err, rows) => {
+    pool.query("SELECT * FROM images WHERE id=?", [id], (err, rows) => {
       if (err) return rej(err);
       acc(
         rows.map((item) =>
@@ -91,14 +92,47 @@ async function getItem(id) {
 
 async function storeItem(item) {
   return new Promise((acc, rej) => {
-    pool.query(
-      "INSERT INTO todo_items (id, name, completed) VALUES (?, ?, ?)",
-      [item.id, item.name, item.completed ? 1 : 0],
-      (err) => {
-        if (err) return rej(err);
-        acc();
+    // pool.query(
+    //   "INSERT INTO images (id, name, completed) VALUES (?, ?, ?)",
+    //   [item.id, item.name, item.completed ? 1 : 0],
+    //   (err) => {
+    //     if (err) return rej(err);
+    //     acc();
+    //   }
+    // );
+    request(item.link, function (error, response, body) {
+      if (!error && response.statusCode === 200) {
+        if (response.headers["content-type"].match(/(image)+\//g).length != 0) {
+          /* It contains 'image/' as the content type */
+          pool.query(
+            "INSERT INTO images (link) VALUES (?)",
+            [item.link],
+            (err, rows) => {
+              if (err) return rej(err);
+              let objJson = Object.assign({}, item, {
+                id: rows.insertId,
+                isImage: true
+              });
+              console.log("objJson: ", objJson);
+              acc(objJson);
+            }
+          );
+        } else {
+          /* no match with 'image/' */
+          let objJson = Object.assign({}, item, {
+            // id: rows.insertId,
+            isImage: false
+          });
+          acc(objJson);
+        }
+      } else {
+        let objJson = Object.assign({}, item, {
+          // id: rows.insertId,
+          isImage: false
+        });
+        acc(objJson);
       }
-    );
+    });
   });
 }
 
