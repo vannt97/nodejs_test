@@ -113,7 +113,6 @@ async function checkCelebrity(dataBase64) {
         headers: {
           "content-type": "application/json",
           // Authorization:
-          //   `Bearer ${process.env.TOKEN}`,
         },
         url: "https://api.openai.com/v1/chat/completions",
         body: JSON.stringify({
