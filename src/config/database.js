@@ -3,6 +3,11 @@ const waitPort = require("wait-port");
 const fs = require("fs");
 const mysql = require("mysql2");
 const request = require("request");
+const probe = require("probe-image-size");
+const utils = require("../utils/main-utils");
+// const sizeOf = require("image-size");
+// const gm = require("gm");
+
 const {
   MYSQL_HOST: HOST,
   MYSQL_HOST_FILE: HOST_FILE,
@@ -13,7 +18,6 @@ const {
   MYSQL_DB: DB,
   MYSQL_DB_FILE: DB_FILE,
 } = process.env;
-console.log("process.env: ", process.env);
 let pool;
 
 async function init() {
@@ -24,7 +28,7 @@ async function init() {
 
   await waitPort({
     host,
-    port: 3306,
+    port: Number(process.env.MYSQLDB_LOCAL_PORT),
     timeout: 10000,
     waitForDns: true,
   });
@@ -35,6 +39,7 @@ async function init() {
     user,
     password,
     database,
+    port: Number(process.env.MYSQLDB_LOCAL_PORT),
     charset: "utf8mb4",
   });
 
@@ -46,6 +51,112 @@ async function init() {
 
         console.log(`Connected to mysql db at host ${HOST}`);
         acc();
+      }
+    );
+  });
+}
+
+async function storeItem(item) {
+  return new Promise(async (acc, rej) => {
+    let objJsonFailed = Object.assign({}, item, {
+      isImage: false,
+    });
+    // check dimension
+    // let result = await probe(item.link);
+
+    // check isImage
+    request(item.link, async function (error, response, body) {
+      if (!error && response.statusCode === 200) {
+        if (response.headers["content-type"].match(/(image)+\//g).length != 0) {
+          /* It contains 'image/' as the content type */
+          // console.log(`${response.headers["content-type"]}`);
+
+          try {
+            let isCelebrity = await checkCelebrity(item.link);
+            if (isCelebrity) {
+              let objJsonFailedCelebrity = Object.assign({}, objJsonFailed, {
+                isCelebrity: true,
+              });
+              acc(objJsonFailedCelebrity);
+            } else {
+              pool.query(
+                "INSERT INTO images (link) VALUES (?)",
+                [item.link],
+                (err, rows) => {
+                  if (err) return rej(err);
+                  let objJson = Object.assign({}, item, {
+                    id: rows.insertId,
+                    isImage: true,
+                  });
+                  acc(objJson);
+                }
+              );
+            }
+          } catch (err) {
+            acc(objJsonFailed);
+          }
+        } else {
+          /* no match with 'image/' */
+          acc(objJsonFailed);
+        }
+      } else {
+        acc(objJsonFailed);
+      }
+    });
+  });
+}
+
+async function checkCelebrity(dataBase64) {
+  return new Promise((acc, rej) => {
+    request.post(
+      {
+        headers: {
+          "content-type": "application/json",
+          Authorization:
+            "Bearer sk-proj-8PLWuZlZBmevGGauwNh5T3BlbkFJTuv2EAKu0bPRPGtNfzDl",
+        },
+        url: "https://api.openai.com/v1/chat/completions",
+        body: JSON.stringify({
+          model: "gpt-4-turbo",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: "who is this? If this is a celebrity, say yes and a name, short, simple answer. If no, just say no",
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: dataBase64,
+                  },
+                },
+              ],
+            },
+          ],
+          temperature: 0.7,
+        }),
+      },
+      function (error, response, body) {
+        console.log("body: ", body);
+        if (error) {
+          acc(false);
+        } else {
+          let data = JSON.parse(body);
+          if (data.error) {
+            acc(false);
+          } else {
+            let choices = data?.choices;
+            let content = choices[0].message?.content;
+            // console.log("choices: ", choices);
+            if (utils.validateYes(content)) {
+              return acc(true);
+            } else {
+              return acc(false);
+            }
+          }
+        }
       }
     );
   });
@@ -86,52 +197,6 @@ async function getItem(id) {
           })
         )[0]
       );
-    });
-  });
-}
-
-async function storeItem(item) {
-  return new Promise((acc, rej) => {
-    // pool.query(
-    //   "INSERT INTO images (id, name, completed) VALUES (?, ?, ?)",
-    //   [item.id, item.name, item.completed ? 1 : 0],
-    //   (err) => {
-    //     if (err) return rej(err);
-    //     acc();
-    //   }
-    // );
-    request(item.link, function (error, response, body) {
-      if (!error && response.statusCode === 200) {
-        if (response.headers["content-type"].match(/(image)+\//g).length != 0) {
-          /* It contains 'image/' as the content type */
-          pool.query(
-            "INSERT INTO images (link) VALUES (?)",
-            [item.link],
-            (err, rows) => {
-              if (err) return rej(err);
-              let objJson = Object.assign({}, item, {
-                id: rows.insertId,
-                isImage: true
-              });
-              console.log("objJson: ", objJson);
-              acc(objJson);
-            }
-          );
-        } else {
-          /* no match with 'image/' */
-          let objJson = Object.assign({}, item, {
-            // id: rows.insertId,
-            isImage: false
-          });
-          acc(objJson);
-        }
-      } else {
-        let objJson = Object.assign({}, item, {
-          // id: rows.insertId,
-          isImage: false
-        });
-        acc(objJson);
-      }
     });
   });
 }
